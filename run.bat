@@ -5,7 +5,7 @@ if %ERRORLEVEL% equ 0 (
     echo Server is already running.
 ) else (
     echo Starting Python Server in background...
-    powershell -Command "Start-Process python -ArgumentList '-m http.server 8080' -WindowStyle Hidden"
+    start "" pythonw -m http.server 8080
     rem รอให้เซิร์ฟเวอร์เปิดเสร็จสักครู่
     timeout /t 1 /nobreak >nul
 )
