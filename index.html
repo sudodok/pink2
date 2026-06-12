@@ -141,6 +141,9 @@
             <button id="tab-logs" class="tab-btn" onclick="switchTab('logs-view')">
                 <i class="fa-solid fa-clock-rotate-left"></i> ประวัติ & สลิปโอนเงิน
             </button>
+            <button id="tab-member-history" class="tab-btn" onclick="switchTab('member-history-view')" style="display: none;">
+                <i class="fa-solid fa-receipt"></i> ประวัติการเบิกของฉัน
+            </button>
         </div>
 
         <!-- TAB 1: Dashboard View -->
@@ -362,6 +365,29 @@
                     <div id="president-only-warning" style="display: none; text-align: center; color: var(--accent-warning); font-size: 0.9rem;">
                         <i class="fa-solid fa-triangle-exclamation"></i> ฟังก์ชันการเงินของประธานสวัสดิการ จะเปิดใช้งานเมื่อล็อกอินระบบประธานแล้วเท่านั้น
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 5: Member's Own History View -->
+        <div id="member-history-view" class="tab-content">
+            <div class="panel-card">
+                <h2 class="panel-title"><i class="fa-solid fa-list-check"></i> ประวัติและสถานะการเบิกเงินของฉัน</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>วันเวลา</th>
+                                <th>รายการสินค้า</th>
+                                <th>จำนวนเงิน</th>
+                                <th>สถานะการเบิก</th>
+                                <th>สลิปโอนคืน (จากประธาน)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="member-history-table">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

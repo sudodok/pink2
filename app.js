@@ -104,10 +104,11 @@ function checkSession() {
             roleDisplay = `<i class="fa-solid fa-crown"></i> ประธานสวัสดิการ`;
             document.getElementById('user-avatar').style.background = 'var(--accent-warning)';
             
-            // President: Show navigation and financial metrics
+            // President: Show navigation and financial metrics, but hide request related tabs
             tabNav.style.display = 'flex';
             metricsGrid.style.display = '';
             document.getElementById('tab-request').style.display = 'none';
+            document.getElementById('tab-member-history').style.display = 'none';
             document.getElementById('tab-dashboard').style.display = '';
             document.getElementById('tab-pending').style.display = '';
             document.getElementById('tab-logs').style.display = '';
@@ -118,9 +119,14 @@ function checkSession() {
             roleDisplay = getDeptDisplayName(state.user.department);
             document.getElementById('user-avatar').style.background = 'var(--accent-primary)';
             
-            // Member: Hide navigation bar and financial metrics completely
-            tabNav.style.display = 'none';
+            // Member: Show navigation, but only show request and personal history tabs. Hide metrics grid.
+            tabNav.style.display = 'flex';
             metricsGrid.style.display = 'none';
+            document.getElementById('tab-request').style.display = '';
+            document.getElementById('tab-member-history').style.display = '';
+            document.getElementById('tab-dashboard').style.display = 'none';
+            document.getElementById('tab-pending').style.display = 'none';
+            document.getElementById('tab-logs').style.display = 'none';
             
             // Default view for Member
             switchTab('request-view');
@@ -281,6 +287,7 @@ function renderAll() {
     renderRecentTransactions();
     renderPendingQueue();
     renderLogsList();
+    renderMemberHistory();
 }
 
 // Switch View Tabs
@@ -298,7 +305,8 @@ function switchTab(viewId) {
         'dashboard-view': 'tab-dashboard',
         'request-view': 'tab-request',
         'pending-view': 'tab-pending',
-        'logs-view': 'tab-logs'
+        'logs-view': 'tab-logs',
+        'member-history-view': 'tab-member-history'
     };
     document.getElementById(map[viewId]).classList.add('active');
 }
@@ -917,4 +925,56 @@ function confirmReject() {
     renderAll();
     closeRejectModal();
     alert('บันทึกการปฏิเสธใบเบิกเงินลงประวัติสำเร็จ');
+}
+
+// Render Member's Personal History
+function renderMemberHistory() {
+    const tbody = document.getElementById('member-history-table');
+    if (!tbody || !state.user || state.user.role !== 'purchaser') return;
+    
+    tbody.innerHTML = '';
+    
+    // Filter requests submitted by this logged-in member
+    const myRequests = state.requests.filter(req => req.name === state.user.name && req.department === state.user.department);
+    
+    // Sort by date descending
+    myRequests.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (myRequests.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">คุณยังไม่มีประวัติการส่งเบิกเงิน</td></tr>`;
+        return;
+    }
+    
+    myRequests.forEach(req => {
+        const tr = document.createElement('tr');
+        
+        let statusBadge = '';
+        if (req.status === 'pending') {
+            statusBadge = `<span class="badge badge-pending">รอพิจารณา</span>`;
+        } else if (req.status === 'approved') {
+            statusBadge = `<span class="badge badge-approved">โอนเงินสำเร็จ</span>`;
+        } else {
+            statusBadge = `<span class="badge badge-rejected" title="${req.rejectReason}">ปฏิเสธ (ชี้เพื่อดูเหตุผล)</span>
+                           <div style="font-size:0.75rem; color:var(--accent-danger); margin-top:2px;">เหตุผล: ${req.rejectReason}</div>`;
+        }
+        
+        let slipCell = `<span style="color:var(--text-muted);">—</span>`;
+        if (req.status === 'approved' && req.transferSlip) {
+            slipCell = `<button class="btn" style="width:auto; padding:0.25rem 0.5rem; font-size:0.75rem; background:rgba(236,72,153,0.1); color:var(--accent-primary);" onclick="viewImage('${req.transferSlip}')">
+                            <i class="fa-solid fa-file-image"></i> ดูสลิปประธาน
+                        </button>`;
+        }
+        
+        tr.innerHTML = `
+            <td style="font-size: 0.8rem; color: var(--text-muted);">${formatDateTime(req.date)}</td>
+            <td>
+                <div style="font-weight: 500;">${req.item}</div>
+                ${req.memo ? `<div style="font-size:0.75rem; color:var(--text-secondary);">หมายเหตุ: ${req.memo}</div>` : ''}
+            </td>
+            <td style="font-weight: 600;">${formatCurrency(req.amount)}</td>
+            <td>${statusBadge}</td>
+            <td>${slipCell}</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
