@@ -97,12 +97,30 @@ function checkSession() {
         document.getElementById('user-display-name').textContent = state.user.name;
         
         let roleDisplay = '';
+        const tabNav = document.querySelector('.tab-navigation');
+        
         if (state.user.role === 'president') {
             roleDisplay = `<i class="fa-solid fa-crown"></i> ประธานสวัสดิการ`;
             document.getElementById('user-avatar').style.background = 'var(--accent-warning)';
+            
+            // President: Show navigation, but hide the "Request" tab button
+            tabNav.style.display = 'flex';
+            document.getElementById('tab-request').style.display = 'none';
+            document.getElementById('tab-dashboard').style.display = '';
+            document.getElementById('tab-pending').style.display = '';
+            document.getElementById('tab-logs').style.display = '';
+            
+            // Default view for President
+            switchTab('pending-view');
         } else {
             roleDisplay = getDeptDisplayName(state.user.department);
             document.getElementById('user-avatar').style.background = 'var(--accent-primary)';
+            
+            // Member: Hide navigation bar completely (they only do Request Reimbursement)
+            tabNav.style.display = 'none';
+            
+            // Default view for Member
+            switchTab('request-view');
         }
         document.getElementById('user-display-role').innerHTML = roleDisplay;
         
@@ -685,7 +703,7 @@ function handleRequestSubmit(event) {
     document.getElementById('form-budget-warning').style.display = 'none';
     
     alert('ส่งใบเบิกเข้าคลังสวัสดิการสำเร็จเรียบร้อย! ประธานสวัสดิการสีชมพูจะสแกนโอนเงินตามลำดับคิว');
-    switchTab('dashboard-view');
+    switchTab('request-view');
 }
 
 // Handle Add Income Submit
