@@ -236,6 +236,37 @@ function saveToLocalStorage() {
     }
 }
 
+function sanitizeState() {
+    if (!state) {
+        state = {
+            user: null,
+            incomes: [],
+            allocations: {},
+            requests: [],
+            logs: []
+        };
+        Object.keys(DEPARTMENTS).forEach(d => {
+            state.allocations[d] = 0;
+        });
+        return;
+    }
+    if (!state.incomes) state.incomes = [];
+    if (!state.allocations) {
+        state.allocations = {};
+        Object.keys(DEPARTMENTS).forEach(d => {
+            state.allocations[d] = 0;
+        });
+    } else {
+        Object.keys(DEPARTMENTS).forEach(d => {
+            if (state.allocations[d] === undefined) {
+                state.allocations[d] = 0;
+            }
+        });
+    }
+    if (!state.requests) state.requests = [];
+    if (!state.logs) state.logs = [];
+}
+
 function loadFromDatabase(callback) {
     if (useFirebase && db) {
         console.log("Attempting to connect to Firebase Firestore...");
@@ -262,6 +293,7 @@ function loadFromDatabase(callback) {
                     const currentUser = state.user;
                     state = doc.data();
                     state.user = currentUser;
+                    sanitizeState();
                     
                     console.log("State loaded successfully from Firebase Firestore");
                     setupFirebaseRealtimeListener();
@@ -302,6 +334,7 @@ function setupFirebaseRealtimeListener() {
                 const currentUser = state.user;
                 state = data;
                 state.user = currentUser; // Maintain current session locally
+                sanitizeState();
                 
                 console.log("State synced in real-time from Firebase Firestore");
                 if (state.user) {
@@ -333,6 +366,7 @@ function loadLocalData(callback) {
             req.onsuccess = () => {
                 if (req.result) {
                     state = req.result;
+                    sanitizeState();
                     console.log("State loaded successfully from IndexedDB Database");
                     callback();
                 } else {
@@ -363,6 +397,7 @@ function loadFromLocalStorageFallback() {
     if (saved) {
         try {
             state = JSON.parse(saved);
+            sanitizeState();
             console.log("State loaded from LocalStorage fallback");
             saveToLocalStorage();
         } catch(e) {
@@ -377,7 +412,10 @@ function loadFromLocalStorageFallback() {
 function resetState() {
     state.user = null;
     state.incomes = [];
-    state.allocations = { stand: 0, leaders: 0, parade: 0, welfare: 0, props: 0 };
+    state.allocations = {};
+    Object.keys(DEPARTMENTS).forEach(d => {
+        state.allocations[d] = 0;
+    });
     state.requests = [];
     state.logs = [];
     saveToLocalStorage();
