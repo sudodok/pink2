@@ -936,19 +936,56 @@ function triggerUpload(elemId) {
     document.getElementById(elemId).click();
 }
 
-// Image File preview loader
+// Image compression utility
+function compressImage(file, maxWidth, maxHeight, quality, callback) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            // Calculate new dimensions
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = Math.round((width * maxHeight) / height);
+                    height = maxHeight;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Export to JPEG with quality
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+            callback(compressedDataUrl);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Image File preview loader with compression
 function handleImagePreview(input, previewId) {
     const file = input.files[0];
     const previewContainer = document.getElementById(previewId);
     
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
+        // Compress images to max 1024 width/height for firestore storage size compatibility (max 1MB per doc)
+        compressImage(file, 1024, 1024, 0.7, (compressedDataUrl) => {
             const img = previewContainer.querySelector('img');
-            img.src = e.target.result;
+            img.src = compressedDataUrl;
             previewContainer.style.display = 'block';
-        }
-        reader.readAsDataURL(file);
+        });
     }
 }
 
@@ -966,7 +1003,7 @@ function handleRequestSubmit(event) {
     event.preventDefault();
     
     if (!state.user || state.user.role !== 'purchaser') {
-        alert('เฉพาะสมาชิกในสีปทุมชาติเท่านั้นที่มีสิทธิ์เบิกจ่ายเงิน');
+        alert('เฉพาะสมาชิกในสีชมพูเท่านั้นที่มีสิทธิ์เบิกจ่ายเงิน');
         return;
     }
     
