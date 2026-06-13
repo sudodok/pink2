@@ -59,7 +59,7 @@
                     <label for="login-member-name">ชื่อ-นามสกุล ผู้เบิกเงิน</label>
                     <input type="text" id="login-member-name" class="form-control"
                         placeholder="พิมพ์ชื่อหรือนามสกุลเพื่อค้นหา..."
-                        autocomplete="off"
+                        autocomplete="new-password"
                         oninput="handleMemberSearch(this.value)"
                         onfocus="handleMemberSearch(this.value)"
                         required>
@@ -82,7 +82,7 @@
                     <label for="login-member-code">รหัสผ่าน</label>
                     <input type="password" id="login-member-code" class="form-control"
                         placeholder="กรอกรหัสผ่าน"
-                        autocomplete="off" required>
+                        autocomplete="new-password" required>
                     <div id="member-code-error" style="display:none; color: var(--accent-danger); font-size:0.82rem; margin-top:0.35rem;">
                         <i class="fa-solid fa-circle-exclamation"></i> รหัสผ่านไม่ถูกต้อง
                     </div>
